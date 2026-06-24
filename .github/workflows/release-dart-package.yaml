@@ -290,44 +290,25 @@ jobs:
 
           git status
 
-      - name: Configure CMake
-        shell: bash
-        run: |
-          export CMAKE_CXX_COMPILER_LAUNCHER=ccache
-          export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
-          cmake --version
-
-          mkdir build
-          cd build
-          cmake \
-            -D SHERPA_ONNX_ENABLE_PORTAUDIO=OFF \
-            -D SHERPA_ONNX_ENABLE_TTS=ON \
-            -D CMAKE_BUILD_TYPE=Release \
-            -D BUILD_SHARED_LIBS=ON \
-            -D CMAKE_INSTALL_PREFIX=./install \
-            -D SHERPA_ONNX_ENABLE_JNI=OFF \
-            -D SHERPA_ONNX_ENABLE_BINARY=OFF \
-            -D CMAKE_OSX_ARCHITECTURES="x86_64;arm64" \
-            ..
-
       - name: Build sherpa-onnx
         shell: bash
         run: |
           export CMAKE_CXX_COMPILER_LAUNCHER=ccache
           export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
           cmake --version
+          ./build-swift-macos.sh
 
-          cd build
-          make -j2 install
-
-          ls -lh install/lib/libsherpa-onnx-c-api.dylib
-          file install/lib/libsherpa-onnx-c-api.dylib
-          rm -v install/lib/libonnxruntime.dylib
+          ls -lh build-swift-macos/sherpa-onnx.xcframework
+          ls -lh build-swift-macos/onnxruntime.xcframework
 
       - name: Copy pre-built libs
         shell: bash
         run: |
-          cp -v build/install/lib/lib*.dylib* flutter/sherpa_onnx_macos/macos/
+          rm -rf flutter/sherpa_onnx_macos/macos/sherpa-onnx.xcframework
+          rm -rf flutter/sherpa_onnx_macos/macos/onnxruntime.xcframework
+
+          cp -av build-swift-macos/sherpa-onnx.xcframework flutter/sherpa_onnx_macos/macos/
+          cp -av build-swift-macos/onnxruntime.xcframework flutter/sherpa_onnx_macos/macos/
 
           mv -v flutter/sherpa_onnx_macos /tmp/to_be_published
 
@@ -892,7 +873,11 @@ jobs:
         shell: bash
         run: |
           echo "----ios arm64 and arm64_x64_simulator----"
-          cp -av build-ios-shared/sherpa_onnx.xcframework flutter/sherpa_onnx_ios/ios/
+          rm -rf flutter/sherpa_onnx_ios/ios/sherpa-onnx.xcframework
+          rm -rf flutter/sherpa_onnx_ios/ios/onnxruntime.xcframework
+
+          cp -av build-ios-shared/sherpa-onnx.xcframework flutter/sherpa_onnx_ios/ios/
+          cp -av build-ios-shared/ios-onnxruntime/onnxruntime.xcframework flutter/sherpa_onnx_ios/ios/
 
           mv -v flutter/sherpa_onnx_ios /tmp/to_be_published
 

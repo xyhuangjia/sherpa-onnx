@@ -286,13 +286,13 @@ for d in ios-arm64_x86_64-simulator ios-arm64; do
 EOF
 done
 
-rm -rf sherpa_onnx.xcframework
+rm -rf sherpa-onnx.xcframework
 xcodebuild -create-xcframework \
   -framework ios-arm64/sherpa_onnx.framework \
   -framework ios-arm64_x86_64-simulator/sherpa_onnx.framework \
-  -output sherpa_onnx.xcframework
+  -output sherpa-onnx.xcframework
 
-cd sherpa_onnx.xcframework
+cd sherpa-onnx.xcframework
 echo "PWD: $PWD"
 ls -lh
 echo "---"

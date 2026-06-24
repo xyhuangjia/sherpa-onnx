@@ -26,6 +26,19 @@ make -j4
 make install
 rm -fv ./install/include/cargs.h
 
+onnxruntime_include_dir=${SHERPA_ONNXRUNTIME_INCLUDE_DIR:-_deps/onnxruntime-src/include}
+if [[ ! -f "$onnxruntime_include_dir/onnxruntime_c_api.h" && -d _deps ]]; then
+  onnxruntime_header=$(find _deps -path '*/onnxruntime-src/include/onnxruntime_c_api.h' -print -quit)
+  if [[ -n $onnxruntime_header ]]; then
+    onnxruntime_include_dir=$(dirname "$onnxruntime_header")
+  fi
+fi
+
+if [[ -z $onnxruntime_include_dir || ! -f "$onnxruntime_include_dir/onnxruntime_c_api.h" ]]; then
+  echo "Cannot find onnxruntime headers for onnxruntime.xcframework"
+  exit 1
+fi
+
 libtool -static -o ./install/lib/libsherpa-onnx.a \
   ./install/lib/libsherpa-onnx-c-api.a \
   ./install/lib/libsherpa-onnx-core.a \
@@ -44,3 +57,9 @@ xcodebuild -create-xcframework \
   -library install/lib/libsherpa-onnx.a \
   -headers install/include \
   -output sherpa-onnx.xcframework
+
+rm -rf onnxruntime.xcframework
+xcodebuild -create-xcframework \
+  -library install/lib/libonnxruntime.a \
+  -headers "$onnxruntime_include_dir" \
+  -output onnxruntime.xcframework
